@@ -1,42 +1,42 @@
 {
   "project_info": {
-    "project_number": "790858691404",
-    "firebase_url": "https://pdiot-279dd-default-rtdb.firebaseio.com",
-    "project_id": "pdiot-279dd",
-    "storage_bucket": "pdiot-279dd.appspot.com"
+    "project_number": "139441038322",
+    "firebase_url": "https://wise-boulder-368910-default-rtdb.firebaseio.com",
+    "project_id": "wise-boulder-368910",
+    "storage_bucket": "wise-boulder-368910.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:790858691404:android:04b087546130c4022695e9",
+        "mobilesdk_app_id": "1:139441038322:android:409fe90fd4a84c6acfc16b",
         "android_client_info": {
           "package_name": "com.specknet.pdiotapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "790858691404-4mtgieeleb5icl199126ajsf7g2npnjp.apps.googleusercontent.com",
+          "client_id": "139441038322-eb0m4tiee7hibnsra1iqlcos5725rvte.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.specknet.pdiotapp",
-            "certificate_hash": "19d30bcc3cf324123bc55bea3107150d4dc6a219"
+            "certificate_hash": "efb89f2759d9e8104a906d02232e9a071d536657"
           }
         },
         {
-          "client_id": "790858691404-821e4elpec4rv1lp751leuj948vvs2c6.apps.googleusercontent.com",
+          "client_id": "139441038322-cd2pdj2dff35dkgl6lp2c32i3uijk1ll.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCvYOmx3LqP8R6x0HH4tFDcyQPMzH8PrYE"
+          "current_key": "AIzaSyDlT3Yw0XVXIOcKvpj8oG7R3yMXOspTYDM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "790858691404-821e4elpec4rv1lp751leuj948vvs2c6.apps.googleusercontent.com",
+              "client_id": "139441038322-cd2pdj2dff35dkgl6lp2c32i3uijk1ll.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -45,27 +45,27 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:790858691404:android:3ecd64ff60d3b5be2695e9",
+        "mobilesdk_app_id": "1:139441038322:android:87d7e78319ea284fcfc16b",
         "android_client_info": {
           "package_name": "com.specknet.pdiotapp.doctor"
         }
       },
       "oauth_client": [
         {
-          "client_id": "790858691404-821e4elpec4rv1lp751leuj948vvs2c6.apps.googleusercontent.com",
+          "client_id": "139441038322-cd2pdj2dff35dkgl6lp2c32i3uijk1ll.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCvYOmx3LqP8R6x0HH4tFDcyQPMzH8PrYE"
+          "current_key": "AIzaSyDlT3Yw0XVXIOcKvpj8oG7R3yMXOspTYDM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "790858691404-821e4elpec4rv1lp751leuj948vvs2c6.apps.googleusercontent.com",
+              "client_id": "139441038322-cd2pdj2dff35dkgl6lp2c32i3uijk1ll.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -40,14 +40,18 @@ class MainActivity : AppCompatActivity() {
             map.entries.forEach {
                 val uid = it.key
                 val value1 = it.value as Map<String, Any>
-                val userInfoMap = value1["userInfo"] as Map<String, Any>
-                val email = userInfoMap["email"]
-                Log.i(TAG, "onDataChange: email =  ${email}")
 
                 val userInfoBean = UserInfoBean()
                 userInfoBean.uid = uid
-                userInfoBean.email = email.toString()
 
+                if(value1["userInfo"] != null) {
+                    val userInfoMap = value1["userInfo"] as Map<String, Any>
+                    val email = userInfoMap["email"]
+                    Log.i(TAG, "onDataChange: email =  ${email}")
+                    userInfoBean.email = email.toString()
+                } else {
+                    userInfoBean.email = uid
+                }
                 userList.add(userInfoBean)
             }
             updateUIList(userList)
