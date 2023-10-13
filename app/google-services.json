@@ -52,6 +52,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "139441038322-duh5qocsckhv1tqrelot6el6vei82agq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.specknet.pdiotapp.doctor",
+            "certificate_hash": "1d55a5d82b988e04e7b008f5c1e6aac0eaf2ee7e"
+          }
+        },
+        {
           "client_id": "139441038322-cd2pdj2dff35dkgl6lp2c32i3uijk1ll.apps.googleusercontent.com",
           "client_type": 3
         }

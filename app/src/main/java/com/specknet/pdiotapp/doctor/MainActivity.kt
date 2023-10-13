@@ -1,22 +1,28 @@
 package com.specknet.pdiotapp.doctor
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
-import java.text.SimpleDateFormat
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,8 +32,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val database = Firebase.database
-    private val sdf = SimpleDateFormat("yyyyMMdd")
-    private val gson = Gson()
 
     private var rootDbPath = ""
     private var rootRef: DatabaseReference? = null
@@ -44,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 val userInfoBean = UserInfoBean()
                 userInfoBean.uid = uid
 
-                if(value1["userInfo"] != null) {
+                if (value1["userInfo"] != null) {
                     val userInfoMap = value1["userInfo"] as Map<String, Any>
                     val email = userInfoMap["email"]
                     Log.i(TAG, "onDataChange: email =  ${email}")
@@ -85,9 +89,12 @@ class MainActivity : AppCompatActivity() {
 
         // 给listview的每一个item设置点击事件
         listView.setOnItemClickListener { parent, view, position, id ->
-            val intent = Intent(this, UserDetailActivity::class.java)
-            intent.putExtra("uid", userList[position].uid)
-            startActivity(intent)
+//            val intent = Intent(this, UserDetailActivity::class.java)
+//            intent.putExtra("uid", userList[position].uid)
+//            startActivity(intent)
+
+            showBottomSheetDialog(userList[position].uid)
+
         }
 
         listView.adapter = object : BaseAdapter() {
@@ -122,6 +129,92 @@ class MainActivity : AppCompatActivity() {
                 return itemView
             }
         }
+
+    }
+
+    private fun showBottomSheetDialog(uid: String) {
+        val bottomSheetDialog = BottomSheetDialog(this)
+
+
+        val view = View.inflate(this, R.layout.main_bottom_sheet_dialog, null)
+
+        bottomSheetDialog.setContentView(view)
+
+        view.findViewById<View>(R.id.btn_spo2)?.setOnClickListener {
+            Log.i(TAG, "showBottomSheetDialog: btn_spo2")
+            bottomSheetDialog.dismiss()
+
+            val intent = Intent(this, Spo2AndHeartRateHistoryActivity::class.java)
+            intent.putExtra("uid", uid)
+            startActivity(intent)
+        }
+
+        view.findViewById<View>(R.id.btn_action)?.setOnClickListener {
+            Log.i(TAG, "showBottomSheetDialog: btn_action")
+            bottomSheetDialog.dismiss()
+
+            val intent = Intent(this, ActionHistoryActivity::class.java)
+            intent.putExtra("uid", uid)
+            startActivity(intent)
+        }
+
+        bottomSheetDialog.show()
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.home_title_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+
+            R.id.navigation_logout -> {
+                logout()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+
+    private fun logout() {
+
+
+        // this 就是 MainActivity的实例
+        // this.startActivity(Intent(this, LoginActivity::class.java))
+
+
+        AlertDialog.Builder(this).setTitle("确定退出吗").setMessage("是否退出")
+            .setPositiveButton("确定",
+                // 匿名内部类
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface?, which: Int) {
+
+                        // 这里的 this 是匿名内部类 不是HomeActivity
+                        // this.startActivity(Intent(this, LoginActivity::class.java))
+
+                        // firebase退出方法
+                        Firebase.auth.signOut()
+                        this@MainActivity.startActivity(
+                            Intent(
+                                this@MainActivity, LoginActivity::class.java
+                            )
+                        )
+                        finish()
+                    }
+
+                }).setNegativeButton("取消", object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface?, which: Int) {
+
+                }
+
+            }).show()
+
 
     }
 

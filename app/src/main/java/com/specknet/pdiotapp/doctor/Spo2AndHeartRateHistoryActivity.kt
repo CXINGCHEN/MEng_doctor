@@ -6,23 +6,28 @@ import android.widget.CalendarView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.ScatterChart
+import com.github.mikephil.charting.components.AxisBase
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.github.mikephil.charting.data.ScatterData
+import com.github.mikephil.charting.data.ScatterDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import kotlin.random.Random
 
 class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
 
     companion object {
         private const val TAG = "Spo2AndHeartRateHistoryActivity"
+        private const val SLOT_SIZE = 24
     }
 
 
@@ -32,12 +37,12 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
     private val sdfyyyyMMdd = SimpleDateFormat("yyyyMMdd")
 
-    lateinit var thingy1Chart: LineChart
+    lateinit var lineChart: ScatterChart
 
-    lateinit var allThingy1Data: LineData
+    lateinit var scatterData: ScatterData
 
-    lateinit var spo2DataSet: LineDataSet
-    lateinit var heartRateDataSet: LineDataSet
+    lateinit var spo2DataSet: ScatterDataSet
+    lateinit var heartRateDataSet: ScatterDataSet
 
     private var uid: String? = null
 
@@ -45,7 +50,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
     private val gson = Gson()
 
-    val calendar = Calendar.getInstance()
+    val dateFormat = SimpleDateFormat("HH:mm")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,59 +62,157 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
 
         calendarView = findViewById(R.id.calendarView)
-        thingy1Chart = findViewById(R.id.thingy1_chart)
+        lineChart = findViewById(R.id.line_chart)
 
         initCalenderView()
 
-        setupCharts(mutableListOf())
+        initChartsStyle()
+
+        setupChartsData(mockList())
+
+    }
+
+    private fun mockList(): MutableList<Spo2AndHeartRateBean> {
+        val result = mutableListOf<Spo2AndHeartRateBean>()
+
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+
+        val timestampStart = sdf.parse(sdf.format(Date())).time/* + (1000 * 60 * 60 * 12)*/
+        val timestampEnd =
+            sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24)/* - (1000 * 60 * 60 * 11)*/
+
+        var timestamp = timestampStart
+        while (timestamp < (timestampEnd)) {
+            val bean = Spo2AndHeartRateBean()
+            bean.timestamp = timestamp
+            bean.setHeartRate(Random.nextInt(80, 101))
+            bean.spo2 = Random.nextDouble(80.0, 100.0)
+            result.add(bean)
+
+            timestamp += 50000
+        }
+
+        return result
+
+    }
+
+    private fun initChartsStyle() {
+
+        lineChart.description.isEnabled = false
+
+
+        lineChart.isScaleXEnabled = true
+
+        val xAxis = lineChart.xAxis
+
+        xAxis.mLabelWidth = 2
+
+        xAxis.setDrawGridLines(false)
+
+        xAxis.textSize = 12f
+        xAxis.textColor = R.color.black
+
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+
+        xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+                Log.i(TAG, "getAxisLabel: $value")
+                val toLong = value.toLong()
+                return dateFormat.format(toLong)
+            }
+        }
+
+        val yAxis = lineChart.axisLeft
+        yAxis.textSize = 12f
+        yAxis.textColor = R.color.black
+        yAxis.setDrawGridLines(false)
+
+        val axisRight = lineChart.axisRight
+        axisRight.isEnabled = false
 
     }
 
 
-    fun setupCharts(resultBeanList: List<Spo2AndHeartRateBean>) {
+    private fun setupChartsData(resultBeanList: List<Spo2AndHeartRateBean>) {
 
-        val entries_res_accel_x = ArrayList<Entry>()
-        val entries_res_accel_y = ArrayList<Entry>()
-
-        spo2DataSet = LineDataSet(entries_res_accel_x, "spo2")
-        heartRateDataSet = LineDataSet(entries_res_accel_y, "heartRate")
-
-        // 这里是开发调试阶段的假数据
-//        spo2DataSet.addEntry(Entry(0.0f, 15.0f))
-//        spo2DataSet.addEntry(Entry(1.0f, 10.0f))
-//        spo2DataSet.addEntry(Entry(2.0f, 20.0f))
-//        spo2DataSet.addEntry(Entry(3.0f, 17.0f))
-//        spo2DataSet.addEntry(Entry(4.0f, 26.0f))
-//        spo2DataSet.addEntry(Entry(5.0f, 18.0f))
-//
-//
-//        heartRateDataSet.addEntry(Entry(0.0f, 35.0f))
-//        heartRateDataSet.addEntry(Entry(1.0f, 40.0f))
-//        heartRateDataSet.addEntry(Entry(2.0f, 60.0f))
-//        heartRateDataSet.addEntry(Entry(3.0f, 57.0f))
-//        heartRateDataSet.addEntry(Entry(4.0f, 86.0f))
-//        heartRateDataSet.addEntry(Entry(5.0f, 18.0f))
-
-        resultBeanList.forEachIndexed { index, spo2AndHeartRateBean ->
-
-            val heartRate = spo2AndHeartRateBean.heartRate
-            val spo2 = spo2AndHeartRateBean.spo2
-            val timestamp = spo2AndHeartRateBean.timestamp
-
-
-            calendar.timeInMillis = timestamp
-
-            Log.i(TAG, "setupCharts: ${calendar.get(Calendar.HOUR_OF_DAY).toFloat()}")
-
-            // timestamp需要转换成 0 - 24 这个范围的数字
-
-            spo2DataSet.addEntry(Entry(calendar.get(Calendar.HOUR_OF_DAY).toFloat(), spo2.toFloat()))
-            heartRateDataSet.addEntry(Entry(calendar.get(Calendar.HOUR_OF_DAY).toFloat(), heartRate.toFloat()))
-
+        if (resultBeanList.isEmpty()) {
+            return
         }
 
-        spo2DataSet.setDrawCircles(false)
-        heartRateDataSet.setDrawCircles(false)
+        val spo2List = ArrayList<Entry>()
+        val heartRateList = ArrayList<Entry>()
+
+        spo2DataSet = ScatterDataSet(spo2List, "spo2")
+        heartRateDataSet = ScatterDataSet(heartRateList, "heartRate")
+
+
+        // 首先，对数据列表按照时间戳进行升序排序
+        val sortedDataList = resultBeanList.sortedBy { it.timestamp }
+
+        val timestampList = sortedDataList.map { it.timestamp }
+
+        val min = timestampList.min()
+        val max = timestampList.max()
+
+        Log.i(TAG, "setupCharts: ${dateFormat.format(min)} - ${dateFormat.format(max)}")
+
+        // 时间间隔 不管时间范围是多少 都分割成SLOT_SIZE份算平均值
+        val interval = (max - min) / SLOT_SIZE
+
+        // 创建SLOT_SIZE个时间段，并初始化为空数据列表
+        // 初始化一个用于存储子列表的结果集合
+        val result = MutableList(SLOT_SIZE) { mutableListOf<Spo2AndHeartRateBean>() }
+        var startTime = min
+        var endTime = startTime + interval
+
+        for (i in 0 until SLOT_SIZE) {
+            result[i] =
+                sortedDataList.filter { it.timestamp in startTime until endTime }.toMutableList()
+            startTime = endTime
+            endTime += interval
+        }
+
+//        result.forEach { subList ->
+//
+//            if (subList.isNotEmpty()) {
+//
+//                val format = dateFormat.format(subList[0].timestamp)
+//
+//                Log.i(TAG, "setupCharts: format = $format, size = ${subList.size}")
+//
+//                spo2DataSet.addEntry(
+//                    Entry(
+//                        subList.map { it.timestamp }.average().toFloat(),
+//                        subList.map { it.spo2 }.average().toFloat()
+//                    )
+//                )
+//                heartRateDataSet.addEntry(
+//                    Entry(
+//                        subList.map { it.timestamp }.average().toFloat(),
+//                        subList.map { it.heartRate }.average().toFloat()
+//                    )
+//                )
+//            }
+//
+//        }
+
+        resultBeanList.forEach {
+            spo2DataSet.addEntry(
+                Entry(
+                    it.timestamp.toFloat(), it.spo2.toFloat()
+                )
+            )
+            heartRateDataSet.addEntry(
+                Entry(
+                    it.timestamp.toFloat(),
+                    it.heartRate.toFloat()
+                )
+            )
+        }
+
+
+//        spo2DataSet.setDrawCircles(false)
+//        heartRateDataSet.setDrawCircles(false)
 
         spo2DataSet.setColor(
             ContextCompat.getColor(
@@ -123,13 +226,17 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
             )
         )
 
-        val dataSetsRes = ArrayList<ILineDataSet>()
+        val dataSetsRes = ArrayList<IScatterDataSet>()
         dataSetsRes.add(spo2DataSet)
-        dataSetsRes.add(heartRateDataSet)
+//        dataSetsRes.add(heartRateDataSet)
 
-        allThingy1Data = LineData(dataSetsRes)
-        thingy1Chart.data = allThingy1Data
-        thingy1Chart.invalidate()
+        scatterData = ScatterData(dataSetsRes)
+        lineChart.data = scatterData
+
+
+        lineChart.setVisibleXRangeMaximum(resultBeanList[resultBeanList.size / 2].timestamp.toFloat())
+
+        lineChart.invalidate()
 
 
     }
@@ -143,7 +250,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         // yyyy-MM-dd 转成时间戳
         val startTime = sdf.parse(dateString).time
 
-        initLineChartData(startTime)
+        // initLineChartData(startTime)
     }
 
 
@@ -177,9 +284,9 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
                     resultBeanList.add(resultBean)
                 }
 
-                setupCharts(resultBeanList)
+                setupChartsData(resultBeanList)
             } else {
-                setupCharts(listOf())
+                setupChartsData(listOf())
             }
         }.addOnFailureListener {
             Log.i(TAG, "initLineChartData: onFailure")
@@ -191,7 +298,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
     private fun initCalenderView() {
 
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
-            Toast.makeText(this, "$year-$month-$dayOfMonth", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "$year-${month + 1}-$dayOfMonth", Toast.LENGTH_SHORT).show()
             val calendar = Calendar.getInstance()
             calendar.set(Calendar.YEAR, year)
             calendar.set(Calendar.MONTH, month)

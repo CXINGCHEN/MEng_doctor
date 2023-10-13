@@ -18,10 +18,12 @@
             android:layout_height="wrap_content"/>
 
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/thingy1_chart"
+        <com.github.mikephil.charting.charts.ScatterChart
+            android:id="@+id/line_chart"
             android:layout_width="match_parent"
-            android:layout_height="260dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="30dp"/>
 
 
     </LinearLayout>
