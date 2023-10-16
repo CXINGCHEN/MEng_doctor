@@ -20,6 +20,7 @@ import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlin.random.Random
 
 class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
@@ -27,17 +28,14 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "Spo2AndHeartRateHistoryActivity"
-        private const val SLOT_SIZE = 24
     }
 
 
     private lateinit var calendarView: CalendarView
 
-    val sdf = SimpleDateFormat("yyyy-MM-dd")
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
 
-    private val sdfyyyyMMdd = SimpleDateFormat("yyyyMMdd")
-
-    lateinit var lineChart: ScatterChart
+    lateinit var scatterChart: ScatterChart
 
     lateinit var scatterData: ScatterData
 
@@ -50,7 +48,8 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
     private val gson = Gson()
 
-    val dateFormat = SimpleDateFormat("HH:mm")
+    val dateFormat = SimpleDateFormat("HH:mm", Locale.CHINA)
+    var selectDayZeroTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,50 +61,23 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
 
         calendarView = findViewById(R.id.calendarView)
-        lineChart = findViewById(R.id.line_chart)
+        scatterChart = findViewById(R.id.line_chart)
 
         initCalenderView()
 
         initChartsStyle()
 
-        setupChartsData(mockList())
-
-    }
-
-    private fun mockList(): MutableList<Spo2AndHeartRateBean> {
-        val result = mutableListOf<Spo2AndHeartRateBean>()
-
-        val sdf = SimpleDateFormat("yyyy-MM-dd")
-
-        val timestampStart = sdf.parse(sdf.format(Date())).time/* + (1000 * 60 * 60 * 12)*/
-        val timestampEnd =
-            sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24)/* - (1000 * 60 * 60 * 11)*/
-
-        var timestamp = timestampStart
-        while (timestamp < (timestampEnd)) {
-            val bean = Spo2AndHeartRateBean()
-            bean.timestamp = timestamp
-            bean.setHeartRate(Random.nextInt(80, 101))
-            bean.spo2 = Random.nextDouble(80.0, 100.0)
-            result.add(bean)
-
-            timestamp += 50000
-        }
-
-        return result
-
     }
 
     private fun initChartsStyle() {
 
-        lineChart.description.isEnabled = false
+        scatterChart.description.isEnabled = false
 
 
-        lineChart.isScaleXEnabled = true
+        scatterChart.isScaleXEnabled = true
+        scatterChart.isScaleYEnabled = false
 
-        val xAxis = lineChart.xAxis
-
-        xAxis.mLabelWidth = 2
+        val xAxis = scatterChart.xAxis
 
         xAxis.setDrawGridLines(false)
 
@@ -114,87 +86,59 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
         xAxis.position = XAxis.XAxisPosition.BOTTOM
 
+        // x轴显示的值自定义
         xAxis.valueFormatter = object : ValueFormatter() {
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
                 Log.i(TAG, "getAxisLabel: $value")
                 val toLong = value.toLong()
-                return dateFormat.format(toLong)
+                return dateFormat.format(toLong + selectDayZeroTime)
             }
         }
 
-        val yAxis = lineChart.axisLeft
+        val yAxis = scatterChart.axisLeft
         yAxis.textSize = 12f
         yAxis.textColor = R.color.black
         yAxis.setDrawGridLines(false)
 
-        val axisRight = lineChart.axisRight
+        val axisRight = scatterChart.axisRight
         axisRight.isEnabled = false
+
+    }
+
+    private fun mockList(): MutableList<Spo2AndHeartRateBean> {
+        val result = mutableListOf<Spo2AndHeartRateBean>()
+
+        val timestampStart = sdf.parse(sdf.format(Date())).time/* + (1000 * 60 * 60 * 12)*/
+        val timestampEnd =
+            sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24)/* - (1000 * 60 * 60 * 11)*/
+
+        selectDayZeroTime = timestampStart
+
+
+        var timestamp = timestampStart
+        while (timestamp < (timestampEnd)) {
+            val bean = Spo2AndHeartRateBean()
+
+            bean.timestamp = timestamp - selectDayZeroTime
+            bean.setHeartRate(Random.nextInt(80, 101))
+            bean.spo2 = Random.nextDouble(80.0, 100.0)
+            result.add(bean)
+
+            timestamp += 5000
+        }
+
+        return result
 
     }
 
 
     private fun setupChartsData(resultBeanList: List<Spo2AndHeartRateBean>) {
 
-        if (resultBeanList.isEmpty()) {
-            return
-        }
-
         val spo2List = ArrayList<Entry>()
         val heartRateList = ArrayList<Entry>()
 
         spo2DataSet = ScatterDataSet(spo2List, "spo2")
         heartRateDataSet = ScatterDataSet(heartRateList, "heartRate")
-
-
-        // 首先，对数据列表按照时间戳进行升序排序
-        val sortedDataList = resultBeanList.sortedBy { it.timestamp }
-
-        val timestampList = sortedDataList.map { it.timestamp }
-
-        val min = timestampList.min()
-        val max = timestampList.max()
-
-        Log.i(TAG, "setupCharts: ${dateFormat.format(min)} - ${dateFormat.format(max)}")
-
-        // 时间间隔 不管时间范围是多少 都分割成SLOT_SIZE份算平均值
-        val interval = (max - min) / SLOT_SIZE
-
-        // 创建SLOT_SIZE个时间段，并初始化为空数据列表
-        // 初始化一个用于存储子列表的结果集合
-        val result = MutableList(SLOT_SIZE) { mutableListOf<Spo2AndHeartRateBean>() }
-        var startTime = min
-        var endTime = startTime + interval
-
-        for (i in 0 until SLOT_SIZE) {
-            result[i] =
-                sortedDataList.filter { it.timestamp in startTime until endTime }.toMutableList()
-            startTime = endTime
-            endTime += interval
-        }
-
-//        result.forEach { subList ->
-//
-//            if (subList.isNotEmpty()) {
-//
-//                val format = dateFormat.format(subList[0].timestamp)
-//
-//                Log.i(TAG, "setupCharts: format = $format, size = ${subList.size}")
-//
-//                spo2DataSet.addEntry(
-//                    Entry(
-//                        subList.map { it.timestamp }.average().toFloat(),
-//                        subList.map { it.spo2 }.average().toFloat()
-//                    )
-//                )
-//                heartRateDataSet.addEntry(
-//                    Entry(
-//                        subList.map { it.timestamp }.average().toFloat(),
-//                        subList.map { it.heartRate }.average().toFloat()
-//                    )
-//                )
-//            }
-//
-//        }
 
         resultBeanList.forEach {
             spo2DataSet.addEntry(
@@ -204,53 +148,45 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
             )
             heartRateDataSet.addEntry(
                 Entry(
-                    it.timestamp.toFloat(),
-                    it.heartRate.toFloat()
+                    it.timestamp.toFloat(), it.heartRate.toFloat()
                 )
             )
         }
 
-
-//        spo2DataSet.setDrawCircles(false)
-//        heartRateDataSet.setDrawCircles(false)
-
-        spo2DataSet.setColor(
-            ContextCompat.getColor(
-                this, // !! 告诉编译器 activity强制非空 肯定不为空
-                R.color.red
-            )
+        spo2DataSet.color = ContextCompat.getColor(
+            this, R.color.red
         )
-        heartRateDataSet.setColor(
-            ContextCompat.getColor(
-                this, R.color.green
-            )
+        heartRateDataSet.color = ContextCompat.getColor(
+            this, R.color.green
         )
 
         val dataSetsRes = ArrayList<IScatterDataSet>()
         dataSetsRes.add(spo2DataSet)
-//        dataSetsRes.add(heartRateDataSet)
+        dataSetsRes.add(heartRateDataSet)
 
         scatterData = ScatterData(dataSetsRes)
-        lineChart.data = scatterData
+        scatterChart.data = scatterData
 
 
-        lineChart.setVisibleXRangeMaximum(resultBeanList[resultBeanList.size / 2].timestamp.toFloat())
+        // 图表绘制完默认展示多少个点
+        if (resultBeanList.isNotEmpty() && resultBeanList.size >= 40) {
+            scatterChart.setVisibleXRangeMaximum(resultBeanList[39].timestamp.toFloat())
+        }
 
-        lineChart.invalidate()
+        scatterChart.invalidate()
 
 
     }
 
     override fun onResume() {
         super.onResume()
-
         // 把当前时间戳转成 yyyy-MM-dd
         val dateString = sdf.format(Date())
-
         // yyyy-MM-dd 转成时间戳
         val startTime = sdf.parse(dateString).time
+//        initLineChartData(startTime)
 
-        // initLineChartData(startTime)
+        setupChartsData(mockList())
     }
 
 
@@ -267,7 +203,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         val format = sdf.format(Date(startTime))
         Log.d(TAG, "initLineChartData() called with: format = $format")
 
-
+        val sdfyyyyMMdd = SimpleDateFormat("yyyyMMdd", Locale.CHINA)
         val path = "${uid}/date${sdfyyyyMMdd.format(Date(startTime))}/spo2AndHeartRate"
         Log.i(TAG, "initLineChartData: path = ${path}")
         val myRef = database.getReference(path)
@@ -283,8 +219,21 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
                     val resultBean = gson.fromJson(jsonString, Spo2AndHeartRateBean::class.java)
                     resultBeanList.add(resultBean)
                 }
+                // 1697461588000 第一个点的时间戳
+                // 1697461593000 第2个点的时间戳 1697461593000 - 1697461588000 = 5000
+                // 1697461598000 第3个点的时间戳 .. = 5000
+                //（0, 85） (5000,83) (10000, 81) ..
+                if (resultBeanList.isNotEmpty()) {
+                    resultBeanList.sortedBy { it.timestamp }
+                    selectDayZeroTime = resultBeanList[0].timestamp // 这一天中第一个点的时间
 
-                setupChartsData(resultBeanList)
+                    resultBeanList.forEach { bean ->
+                        bean.timestamp = bean.timestamp - selectDayZeroTime
+                    }
+
+                    setupChartsData(resultBeanList)
+                }
+
             } else {
                 setupChartsData(listOf())
             }
