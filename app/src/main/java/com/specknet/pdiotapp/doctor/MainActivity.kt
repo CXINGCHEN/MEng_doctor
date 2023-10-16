@@ -89,12 +89,7 @@ class MainActivity : AppCompatActivity() {
 
         // 给listview的每一个item设置点击事件
         listView.setOnItemClickListener { parent, view, position, id ->
-//            val intent = Intent(this, UserDetailActivity::class.java)
-//            intent.putExtra("uid", userList[position].uid)
-//            startActivity(intent)
-
             showBottomSheetDialog(userList[position].uid)
-
         }
 
         listView.adapter = object : BaseAdapter() {
@@ -154,6 +149,15 @@ class MainActivity : AppCompatActivity() {
             bottomSheetDialog.dismiss()
 
             val intent = Intent(this, ActionHistoryActivity::class.java)
+            intent.putExtra("uid", uid)
+            startActivity(intent)
+        }
+
+        view.findViewById<View>(R.id.btn_realtime_action)?.setOnClickListener {
+            Log.i(TAG, "showBottomSheetDialog: btn_realtime_action")
+            bottomSheetDialog.dismiss()
+
+            val intent = Intent(this, ActionRealtimeHistoryActivity::class.java)
             intent.putExtra("uid", uid)
             startActivity(intent)
         }

@@ -4,6 +4,7 @@ public class RecognitionResultBean {
 
     private Long timestamp;// 日期
     private String label; // 动作类型
+    private int labelIndex; // 动作类型index
     private int count; // 次数
     private String dataSource; // 数据来源
 
@@ -32,6 +33,14 @@ public class RecognitionResultBean {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public int getLabelIndex() {
+        return labelIndex;
+    }
+
+    public void setLabelIndex(int labelIndex) {
+        this.labelIndex = labelIndex;
     }
 
     public int getCount() {

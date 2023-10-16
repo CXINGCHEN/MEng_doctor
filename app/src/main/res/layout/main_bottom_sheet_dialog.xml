@@ -25,5 +25,18 @@
         android:gravity="center"
         android:text="Action"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#BFBFBF"/>
+
+    <TextView
+        android:id="@+id/btn_realtime_action"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:text="Realtime Action"/>
+
 
 </LinearLayout>
