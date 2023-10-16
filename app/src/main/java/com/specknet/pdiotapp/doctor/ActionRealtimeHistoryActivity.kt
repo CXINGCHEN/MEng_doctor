@@ -235,7 +235,7 @@ class ActionRealtimeHistoryActivity : AppCompatActivity() {
         Log.d(TAG, "initLineChartData() called with: format = $format")
 
         val sdfyyyyMMdd = SimpleDateFormat("yyyyMMdd", Locale.CHINA)
-        val path = "${uid}/date${sdfyyyyMMdd.format(Date(startTime))}/spo2AndHeartRate"
+        val path = "${uid}/date${sdfyyyyMMdd.format(Date(startTime))}/actionrealtime"
         Log.i(TAG, "initLineChartData: path = ${path}")
         val myRef = database.getReference(path)
         myRef.get().addOnSuccessListener {
