@@ -108,9 +108,9 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
     private fun mockList(): MutableList<Spo2AndHeartRateBean> {
         val result = mutableListOf<Spo2AndHeartRateBean>()
 
-        val timestampStart = sdf.parse(sdf.format(Date())).time/* + (1000 * 60 * 60 * 12)*/
+        val timestampStart = sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 12)
         val timestampEnd =
-            sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24)/* - (1000 * 60 * 60 * 11)*/
+            sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 11)
 
         selectDayZeroTime = timestampStart
 
@@ -184,9 +184,10 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         val dateString = sdf.format(Date())
         // yyyy-MM-dd 转成时间戳
         val startTime = sdf.parse(dateString).time
-//        initLineChartData(startTime)
+        initLineChartData(startTime)
 
-        setupChartsData(mockList())
+        // 本地代码mock数据
+//        setupChartsData(mockList())
     }
 
 
