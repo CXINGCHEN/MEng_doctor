@@ -38,5 +38,18 @@
         android:gravity="center"
         android:text="Realtime Action"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#BFBFBF"/>
+
+    <TextView
+        android:id="@+id/btn_action_and_heart_rate"
+        style="@style/TextAppearance.AppCompat.Title"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:text="Action &amp; 心率血氧"/>
+
 
 </LinearLayout>

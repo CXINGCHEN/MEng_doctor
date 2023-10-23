@@ -162,6 +162,15 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        view.findViewById<View>(R.id.btn_action_and_heart_rate)?.setOnClickListener {
+            Log.i(TAG, "showBottomSheetDialog: btn_realtime_action")
+            bottomSheetDialog.dismiss()
+
+            val intent = Intent(this, ActionAndHeartRateRealtimeHistoryActivity::class.java)
+            intent.putExtra("uid", uid)
+            startActivity(intent)
+        }
+
         bottomSheetDialog.show()
 
     }

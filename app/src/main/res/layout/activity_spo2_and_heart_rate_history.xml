@@ -19,7 +19,7 @@
 
 
         <com.github.mikephil.charting.charts.ScatterChart
-            android:id="@+id/line_chart"
+            android:id="@+id/heart_rate_chart"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"

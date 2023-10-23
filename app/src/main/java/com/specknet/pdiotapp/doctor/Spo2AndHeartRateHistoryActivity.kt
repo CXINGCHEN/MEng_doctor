@@ -35,9 +35,9 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA)
 
-    lateinit var scatterChart: ScatterChart
+    lateinit var heartRateScatterChart: ScatterChart
 
-    lateinit var scatterData: ScatterData
+    lateinit var heartRateScatterData: ScatterData
 
     lateinit var spo2DataSet: ScatterDataSet
     lateinit var heartRateDataSet: ScatterDataSet
@@ -49,7 +49,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
     private val gson = Gson()
 
     val dateFormat = SimpleDateFormat("HH:mm", Locale.CHINA)
-    var selectDayZeroTime = 0L
+    var selectDayHeartRateZeroTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,23 +61,23 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
 
 
         calendarView = findViewById(R.id.calendarView)
-        scatterChart = findViewById(R.id.line_chart)
+        heartRateScatterChart = findViewById(R.id.heart_rate_chart)
 
         initCalenderView()
 
-        initChartsStyle()
+        initHeartRateChartsStyle()
 
     }
 
-    private fun initChartsStyle() {
+    private fun initHeartRateChartsStyle() {
 
-        scatterChart.description.isEnabled = false
+        heartRateScatterChart.description.isEnabled = false
 
 
-        scatterChart.isScaleXEnabled = true
-        scatterChart.isScaleYEnabled = false
+        heartRateScatterChart.isScaleXEnabled = true
+        heartRateScatterChart.isScaleYEnabled = false
 
-        val xAxis = scatterChart.xAxis
+        val xAxis = heartRateScatterChart.xAxis
 
         xAxis.setDrawGridLines(false)
 
@@ -91,16 +91,16 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
                 Log.i(TAG, "getAxisLabel: $value")
                 val toLong = value.toLong()
-                return dateFormat.format(toLong + selectDayZeroTime)
+                return dateFormat.format(toLong + selectDayHeartRateZeroTime)
             }
         }
 
-        val yAxis = scatterChart.axisLeft
+        val yAxis = heartRateScatterChart.axisLeft
         yAxis.textSize = 12f
         yAxis.textColor = R.color.black
         yAxis.setDrawGridLines(false)
 
-        val axisRight = scatterChart.axisRight
+        val axisRight = heartRateScatterChart.axisRight
         axisRight.isEnabled = false
 
     }
@@ -112,14 +112,14 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         val timestampEnd =
             sdf.parse(sdf.format(Date())).time + (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 11)
 
-        selectDayZeroTime = timestampStart
+        selectDayHeartRateZeroTime = timestampStart
 
 
         var timestamp = timestampStart
         while (timestamp < (timestampEnd)) {
             val bean = Spo2AndHeartRateBean()
 
-            bean.timestamp = timestamp - selectDayZeroTime
+            bean.timestamp = timestamp - selectDayHeartRateZeroTime
             bean.setHeartRate(Random.nextInt(80, 101))
             bean.spo2 = Random.nextDouble(80.0, 100.0)
             result.add(bean)
@@ -132,7 +132,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
     }
 
 
-    private fun setupChartsData(resultBeanList: List<Spo2AndHeartRateBean>) {
+    private fun setupHeartRateChartsData(resultBeanList: List<Spo2AndHeartRateBean>) {
 
         val spo2List = ArrayList<Entry>()
         val heartRateList = ArrayList<Entry>()
@@ -164,16 +164,16 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         dataSetsRes.add(spo2DataSet)
         dataSetsRes.add(heartRateDataSet)
 
-        scatterData = ScatterData(dataSetsRes)
-        scatterChart.data = scatterData
+        heartRateScatterData = ScatterData(dataSetsRes)
+        heartRateScatterChart.data = heartRateScatterData
 
 
         // 图表绘制完默认展示多少个点
         if (resultBeanList.isNotEmpty() && resultBeanList.size >= 40) {
-            scatterChart.setVisibleXRangeMaximum(resultBeanList[39].timestamp.toFloat())
+            heartRateScatterChart.setVisibleXRangeMaximum(resultBeanList[39].timestamp.toFloat())
         }
 
-        scatterChart.invalidate()
+        heartRateScatterChart.invalidate()
 
 
     }
@@ -184,7 +184,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
         val dateString = sdf.format(Date())
         // yyyy-MM-dd 转成时间戳
         val startTime = sdf.parse(dateString).time
-        initLineChartData(startTime)
+        initHeartRateChartData(startTime)
 
         // 本地代码mock数据
 //        setupChartsData(mockList())
@@ -197,7 +197,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
      *
      * 2022-11-18
      */
-    private fun initLineChartData(startTime: Long) {
+    private fun initHeartRateChartData(startTime: Long) {
 
         Log.d(TAG, "initLineChartData() called with: startTime = $startTime")
 
@@ -226,17 +226,17 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
                 //（0, 85） (5000,83) (10000, 81) ..
                 if (resultBeanList.isNotEmpty()) {
                     resultBeanList.sortedBy { it.timestamp }
-                    selectDayZeroTime = resultBeanList[0].timestamp // 这一天中第一个点的时间
+                    selectDayHeartRateZeroTime = resultBeanList[0].timestamp // 这一天中第一个点的时间
 
                     resultBeanList.forEach { bean ->
-                        bean.timestamp = bean.timestamp - selectDayZeroTime
+                        bean.timestamp = bean.timestamp - selectDayHeartRateZeroTime
                     }
 
-                    setupChartsData(resultBeanList)
+                    setupHeartRateChartsData(resultBeanList)
                 }
 
             } else {
-                setupChartsData(listOf())
+                setupHeartRateChartsData(listOf())
             }
         }.addOnFailureListener {
             Log.i(TAG, "initLineChartData: onFailure")
@@ -259,7 +259,7 @@ class Spo2AndHeartRateHistoryActivity : AppCompatActivity() {
             calendar.set(Calendar.MILLISECOND, 0)
 
             // 重新获取选中日期的数据
-            initLineChartData(calendar.timeInMillis)
+            initHeartRateChartData(calendar.timeInMillis)
 
         }
 
